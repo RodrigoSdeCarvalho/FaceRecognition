@@ -13,16 +13,12 @@ def main() -> None:
     """Main function. Executes the face detection on the webcam function.
     """
     face_recognizer = train_LBPH_Face_Recognizer()
-
-    width, height = 220, 220
-    font = cv2.FONT_HERSHEY_COMPLEX_SMALL  
-
     face_detector_path = os.path.join(os.getcwd(), "Assets", "haarcascade_frontalface_default.xml")
     face_detector = cv2.CascadeClassifier(face_detector_path)
-
     camera = cv2.VideoCapture(0)
+    width, height, font = 220, 220, cv2.FONT_HERSHEY_COMPLEX_SMALL
 
-    detect_faces_on_camera(camera, face_detector, face_recognizer, width, height, font)
+    analyze_faces_on_camera(camera, face_detector, face_recognizer, width, height, font)
 
     camera.release()
     cv2.destroyAllWindows()
@@ -40,7 +36,7 @@ def train_LBPH_Face_Recognizer() -> None:
         lbph_classifier = cv2.face.LBPHFaceRecognizer_create(radius=4, neighbors=14, grid_x=9, grid_y=9)
         lbph_classifier.train(faces, ids)
         lbph_classifier.write(os.path.join(ASSETS_PATH, "rodrigo_lbph_classifier.yml"))
-        
+
     return lbph_classifier
 
 
@@ -72,9 +68,9 @@ def pre_process_images() -> tuple[np.ndarray, np.ndarray]:
     return np.array(ids), np.array(faces)
 
 
-def detect_faces_on_camera(camera:VideoCapture, face_detector:CascadeClassifier, face_recognizer, width, height, font) -> None:
+def analyze_faces_on_camera(camera:VideoCapture, face_detector:CascadeClassifier, face_recognizer, width:int, height:int, font:int) -> None:
     """Detects faces on camera and draws a rectangle around them. Quits when 'q' is pressed.
-    
+
     Args:
         camera (VideoCapture): Webcam object.
         face_detector (CascadeClassifier): Face detector object.
@@ -87,7 +83,7 @@ def detect_faces_on_camera(camera:VideoCapture, face_detector:CascadeClassifier,
 
         detections = face_detector.detectMultiScale(gray_frame, minSize=(100, 100),
                                                     minNeighbors=5)
-        
+
         draw_rectangle_around_faces(frame, detections)
         recognize_faces_on_camera(face_recognizer, detections, frame, gray_frame, width, height, font)
 
@@ -113,7 +109,6 @@ def recognize_faces_on_camera(face_recognizer, detections:list, image:Mat, gray_
             image_face = cv2.resize(gray_image[y:y + w, x:x + h], (width, height))
             cv2.rectangle(image, (x, y), (x + w, y + h), (0,0,255), 2)
             id, confidence = face_recognizer.predict(image_face)         
-
             if id == 1 and confidence < 215:
                 name = "Rodrigo"
             else:
